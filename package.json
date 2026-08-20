@@ -1,36 +1,25 @@
 {
-  "name": "@realitycollective/webxr-input",
+  "name": "webxr-input-workspace",
+  "private": true,
   "version": "0.1.0",
-  "description": "Shared, engine-free input contracts for the Reality Collective WebXR extension families: normalised input sources (rays, pinches, pokes, grips, hand joints, gaze, 2D pointers), capability negotiation, a pull-based provider interface, and pointer streams - consumable by the Interactions and UI Extensions families alike. Zero dependencies.",
-  "keywords": ["realitycollective", "webxr", "xr", "input", "openxr", "contracts"],
-  "license": "MIT",
-  "author": "Reality Collective",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "files": ["dist", "CHANGELOG.md"],
+  "description": "Workspace for the Reality Collective WebXR Input contracts - shared, engine-free input contracts consumed by the Interactions and UI Extensions families.",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "build": "npm --workspace @realitycollective/webxr-input run build",
+    "typecheck": "npm --workspace @realitycollective/webxr-input run typecheck",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "verify:pack": "node scripts/verify-pack.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.20.1",
+    "@vitest/coverage-v8": "^4.1.8",
     "typescript": "^5.5.0",
     "vitest": "^4.1.8"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/realitycollective/WebXR-Input.git"
-  },
-  "publishConfig": { "access": "public" },
   "engines": {
     "node": ">=20.19.0 <21.0.0-0 || >=22.12.0 <23.0.0-0 || >=24.0.0"
   }

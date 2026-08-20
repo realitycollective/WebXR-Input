@@ -15,7 +15,7 @@ export interface PointerSample {
   direction: Vec3Tuple;
 }
 
-/** Delivers press–move–release for one interaction source. */
+/** Delivers press-move-release for one interaction source. */
 export interface PointerInputSource {
   onPress(listener: (sample: PointerSample) => void): Unsubscribe;
   onMove(listener: (sample: PointerSample) => void): Unsubscribe;
