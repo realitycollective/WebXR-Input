@@ -1,0 +1,71 @@
+# WebXR Input - CI gate.
+#
+# The repository root is the npm workspace root; `packages/*` holds the
+# publishable libraries. Work branches off `main`; `development` carries the
+# preview line.
+#
+# Validates on every push and EVERY pull request (no branch filter, so a PR
+# into `development` is gated exactly like a PR into `main`):
+#   1. package build     (tsc -> dist)
+#   2. strict typecheck  (src + test)
+#   3. vitest with 100% coverage thresholds
+#   4. verify:pack       - packs, installs into a clean project and imports,
+#                          the only step that exercises the PUBLISHED artifact
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - development
+  # No branch filter: run on every pull request, whatever its target branch,
+  # so changes are always tested before they can be merged.
+  pull_request:
+  # Allow required-check status to be reported through merge queues, if enabled.
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build, typecheck & test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      # Nothing above this line exercises the built artifact - the tests and the
+      # typecheck both resolve the package to `src` through aliases. This packs,
+      # installs into a clean project and imports: the gate that catches a
+      # package which builds green but ships broken.
+      - name: Verify the published artifact is consumable
+        run: npm run verify:pack -- --skip-build
