@@ -1,6 +1,6 @@
 {
   "name": "@realitycollective/webxr-input",
-  "version": "0.1.0-preview.1",
+  "version": "0.1.1-preview.0",
   "description": "Shared, engine-free input contracts for the Reality Collective WebXR extension families: normalised input sources (rays, pinches, pokes, grips, hand joints, gaze, 2D pointers), capability negotiation, a pull-based provider interface, and pointer streams - consumable by the Interactions and UI Extensions families alike. Zero dependencies.",
   "keywords": [
     "realitycollective",
