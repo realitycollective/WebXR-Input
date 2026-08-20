@@ -1,0 +1,10 @@
+{
+  "core": "webxr-input",
+  "packages": [
+    "webxr-input"
+  ],
+  "importCheck": [
+    "webxr-input"
+  ],
+  "preid": "preview"
+}
