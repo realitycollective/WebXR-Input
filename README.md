@@ -8,11 +8,22 @@ It has no dependency on any 3D engine and no runtime dependencies at all. A test
 
 | Piece | Purpose |
 | --- | --- |
-| `InputCapabilities` + `satisfies`/`unmetRequirements` | What a provider can deliver (rays, pokes, grabs `none/poseOnly/native`, hand joints, pinch, buttons/axes, gaze, 2D pointer, head pose, haptics), derived from the LIVE session - and the negotiation helpers consumers gate behaviour on. |
-| `InputSourceSnapshot` | One normalised input source per frame: ray, grip pose, index fingertip, select/squeeze 0..1, native-grab flag, haptics availability. |
-| `InputProvider` | The single interface an engine adapter implements: pull-based `sample()`, capability-change events, optional pre-resolved hit hints (for engines with their own targeting), optional haptic `pulse`. |
+| `InputCapabilities` + `satisfies`/`unmetRequirements` | What a provider can deliver (rays, pokes, grabs `none/poseOnly/native`, hand joints, pinch, buttons/axes, gaze, 2D pointer, head pose, haptics, presence), derived from the LIVE session - and the negotiation helpers consumers gate behaviour on. |
+| `INPUT_CAPABILITY_REQUIREMENTS` | The same requirements as runtime data, with `InputCapabilityRequirement` derived from it. A test checks it against the capability keys, so a capability cannot be added in one place only. |
+| `InputSourceSnapshot` | One normalised input source per frame: ray, grip pose, index fingertip, select/squeeze 0..1, optional grip velocities, native-grab flag, haptics availability. `id` is opaque - read `handedness` for the side, never parse the id. |
+| `velocityBetween` + `linearVelocity` / `angularVelocity` | Grip velocity for throws and flicks. Providers that report it natively fill the snapshot fields; for the rest, `velocityBetween(prev, next, dtSeconds)` derives metres per second and radians per second from two consecutive grip poses. |
+| `InputProvider` | The single interface an engine adapter implements: pull-based `sample()`, capability-change events, optional pre-resolved hit hints (for engines with their own targeting), optional haptic `pulse`, optional `setPresenceVisible`/`setPresenceModality` for showing and hiding the user's own hands and controllers. |
+| `inputProviderContractCases()` | The provider conformance suite as data, not as tests. Each case is a `name` plus a `run(provider, driver?)` that throws on failure, so an adapter iterates them with its own test runner and cases needing a driver hook it cannot fake simply pass. |
 | `PointerSample` / `PointerInputSource` | Press-move-release pointer streams - structurally identical to the UI Extensions' pointer contract, so one input stack drives both families. |
 | Tuples (`Vec3Tuple`, `QuatTuple`, `PoseTuple`, `RayTuple`, `HeadPose`) | Plain-data geometry - no engine types anywhere. |
+
+The conformance suite ships runner-free because every adapter repository already has its own runner. An adapter's test file is a loop:
+
+```ts
+for (const contractCase of inputProviderContractCases()) {
+  it(contractCase.name, () => contractCase.run(provider, driver));
+}
+```
 
 ## Who consumes it
 
@@ -103,3 +114,11 @@ On the accessibility side, W3C's [XR Accessibility User Requirements](https://ww
 This package does not compete with any of the above - it does not replace an engine's input system, render anything, or ask any app to switch. It is ~300 lines of **types the existing systems can be described in**: engine adapters wrap what already exists (three.js WebXR, IWSDK, XR Blocks) and expose it through one contract, so libraries above (interactions, spatial UI, …) are written once instead of once per engine.
 
 The vendors fund neutrality at the data layer (input profiles); nobody's incentives reach the behavioural layer across engines - that unclaimed seam is the whole scope, and the scope is fenced: if an engine-free equivalent emerges upstream, or spec convergence makes the residue trivial, the stated plan is to adopt/retire, not defend (see the validation record's kill criteria).
+
+## What this stack is and is not
+
+The Reality Collective WebXR packages aim at one outcome: an app's logic, input handling, interactions and UI should not care which engine hosts them. Each family ships an engine-free core and thin adapters for Meta IWSDK, plain three.js and WebXR, and Google XR Blocks. When an app still has to reach into the host, either a contract is missing, which is a bug to report, or the app is overreaching.
+
+Portable world-building is not a current promise. Scene content (meshes, prefabs, placement) is built by the app, ideally behind a factory interface the app owns, so that a second host can implement the same factories. A shared content descriptor, following the shape of the UI family's `SceneDescriptor`, will be considered only when a second host is actually targeted. Meta's `iwsdk.scene.v1` format is an acceptable authoring interchange in the meantime.
+
+Position recorded on 2026-09-03 from the Pale Signal client's gaps report.
