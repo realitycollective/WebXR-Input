@@ -1,5 +1,9 @@
 import type { InputCapabilities } from "./capabilities.js";
-import type { InputSourceSnapshot } from "./source.js";
+import type {
+  Handedness,
+  InputSourceSnapshot,
+  PresenceModality,
+} from "./source.js";
 import type { HeadPose, Unsubscribe } from "./types.js";
 
 /**
@@ -51,4 +55,20 @@ export interface InputProvider {
    * pulse could not be delivered. Intensity 0..1, duration in ms.
    */
   pulse?(sourceId: string, intensity: number, durationMs: number): boolean;
+  /**
+   * Show or hide the user's own hand/controller visuals, for one side or
+   * for all of them. A target of "none" names no side: providers change
+   * nothing and only report whether presence is available at all. Only
+   * meaningful when `capabilities.presence` is true.
+   * Returns false when the request could not be delivered, exactly as
+   * {@link pulse} does.
+   */
+  setPresenceVisible?(target: Handedness | "all", visible: boolean): boolean;
+  /**
+   * Choose which visuals represent the user (hands, controllers, or let
+   * the runtime decide). Only meaningful when `capabilities.presence` is
+   * true. Returns false when the request could not be delivered, exactly
+   * as {@link pulse} does.
+   */
+  setPresenceModality?(mode: PresenceModality): boolean;
 }

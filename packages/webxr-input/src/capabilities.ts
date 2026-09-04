@@ -37,6 +37,8 @@ export interface InputCapabilities {
   headPose: boolean;
   /** Haptic actuators are present on at least one source. */
   haptics: boolean;
+  /** The provider can show or hide the user's hand and controller visuals. */
+  presence: boolean;
 }
 
 /** A provider with nothing to give - the safe default before a session. */
@@ -51,24 +53,36 @@ export const NO_CAPABILITIES: Readonly<InputCapabilities> = Object.freeze({
   pointer2d: false,
   headPose: false,
   haptics: false,
+  presence: false,
 });
+
+/**
+ * Every requirement a consumer (an interaction behaviour) can declare, as
+ * runtime data so a test can check it against the keys of
+ * {@link NO_CAPABILITIES}. Every capability appears here, and "grabs" is
+ * the one capability with two requirements.
+ */
+export const INPUT_CAPABILITY_REQUIREMENTS = [
+  "rays",
+  "pokes",
+  "grabs", // satisfied by "poseOnly" or "native"
+  "grabsNative", // satisfied only by "native"
+  "handJoints",
+  "pinch",
+  "buttonsAxes",
+  "gaze",
+  "pointer2d",
+  "headPose",
+  "haptics",
+  "presence",
+] as const;
 
 /**
  * The input requirements a consumer (an interaction behaviour) can declare.
  * Checked against {@link InputCapabilities} by capability negotiation.
  */
 export type InputCapabilityRequirement =
-  | "rays"
-  | "pokes"
-  | "grabs" // satisfied by "poseOnly" or "native"
-  | "grabsNative" // satisfied only by "native"
-  | "handJoints"
-  | "pinch"
-  | "buttonsAxes"
-  | "gaze"
-  | "pointer2d"
-  | "headPose"
-  | "haptics";
+  (typeof INPUT_CAPABILITY_REQUIREMENTS)[number];
 
 /** True when `capabilities` satisfies a single requirement. */
 export function satisfies(
