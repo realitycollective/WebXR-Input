@@ -120,6 +120,33 @@ const CASES: readonly InputProviderContractCase[] = [
     },
   },
   {
+    name: "a working presence pathway is declared in capabilities",
+    run(provider) {
+      // The converse of the case above, and the one that catches real drift:
+      // a provider whose presence methods work but which never sets the
+      // capability. An app reads `capabilities.presence`, sees false, and
+      // hides a feature that works.
+      if (typeof provider.setPresenceVisible !== "function") return;
+      // "none" names no side, so a conforming provider changes nothing and
+      // only reports whether presence is available. That makes it the one
+      // probe safe to run against a live headset.
+      //
+      // This reads the ANSWER rather than the existence of the method on
+      // purpose. A provider whose presence depends on the app registering a
+      // visual first is entitled to implement both methods and report false
+      // until it has one, and must not fail this case while it does.
+      if (!provider.setPresenceVisible("none", true)) return;
+      assert(
+        provider.getCapabilities().presence,
+        "setPresenceVisible() reports presence is available, so capabilities.presence must be true",
+      );
+      assert(
+        typeof provider.setPresenceModality === "function",
+        "setPresenceVisible() reports presence is available, so setPresenceModality() must be implemented",
+      );
+    },
+  },
+  {
     name: "subscriptions return an unsubscribe that can be called",
     run(provider) {
       const offCapabilities = provider.onCapabilitiesChanged(noop);
