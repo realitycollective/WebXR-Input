@@ -46,7 +46,7 @@ Adapters implement `InputProvider`; family cores consume it; **apps never instal
 
 ## Repository layout
 
-The repository root **is** the npm workspace root - `packages/*` holds the publishable libraries, matching [WebXR-Interactions](https://github.com/realitycollective/WebXR-Interactions), [WebXR-UIExtensions](https://github.com/realitycollective/WebXR-UIExtensions) and the [service-framework](https://github.com/realitycollective/com.realitycollective.service-framework.ts).
+The repository root **is** the npm workspace root - `packages/*` holds the publishable libraries, matching [WebXR-Interactions](https://github.com/realitycollective/WebXR-Interactions), [WebXR-UIExtensions](https://github.com/realitycollective/WebXR-UIExtensions), [WebXR-Environment](https://github.com/realitycollective/WebXR-Environment) and the [service-framework](https://github.com/realitycollective/com.realitycollective.service-framework.ts).
 
 ```text
 WebXR-Input/

@@ -194,6 +194,63 @@ describe("the capability-methods case", () => {
   });
 });
 
+describe("the presence-declaration case", () => {
+  const declared = contractCase("working presence pathway");
+
+  it("skips a provider that does not implement presence at all", () => {
+    const provider = broken({
+      getCapabilities: () => NO_CAPABILITIES,
+      setPresenceVisible: undefined,
+      setPresenceModality: undefined,
+    });
+    expect(() => declared.run(provider)).not.toThrow();
+  });
+
+  it("skips a provider whose presence is implemented but not yet available", () => {
+    // The three.js adapter's shape: both methods exist, but nothing is shown
+    // until the app registers a hand or controller model, so the probe
+    // reports false and `presence` is correctly still false.
+    const provider = broken({
+      getCapabilities: () => NO_CAPABILITIES,
+      setPresenceVisible: () => false,
+    });
+    expect(() => declared.run(provider)).not.toThrow();
+  });
+
+  it("rejects a working presence pathway that is never declared", () => {
+    const provider = broken({
+      getCapabilities: () => NO_CAPABILITIES,
+      setPresenceVisible: () => true,
+    });
+    expect(() => declared.run(provider)).toThrow(
+      /capabilities\.presence must be true/,
+    );
+  });
+
+  it("rejects a working pathway that is missing setPresenceModality", () => {
+    const provider = broken({
+      getCapabilities: () => ({ ...NO_CAPABILITIES, presence: true }),
+      setPresenceVisible: () => true,
+      setPresenceModality: undefined,
+    });
+    expect(() => declared.run(provider)).toThrow(
+      /setPresenceModality\(\) must be implemented/,
+    );
+  });
+
+  it("probes with a target that changes nothing", () => {
+    const seen: Array<[string, boolean]> = [];
+    const provider = broken({
+      setPresenceVisible: (target: string, visible: boolean) => {
+        seen.push([target, visible]);
+        return true;
+      },
+    });
+    declared.run(provider);
+    expect(seen).toEqual([["none", true]]);
+  });
+});
+
 describe("the subscription case", () => {
   const subscriptions = contractCase("subscriptions");
 

@@ -4,6 +4,12 @@ Change log for the Reality Collective WebXR Input contracts. The version below i
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Preview builds are not listed separately. The entry for a version accumulates while its previews are published, and is dated when that version is released.
 
+## [0.1.2] 2026-09-05
+
+### Added
+
+- A converse presence case in `inputProviderContractCases()`: a provider whose `setPresenceVisible()` reports that presence is available must declare `capabilities.presence`. The existing case only asserted the forward implication, so a provider that implemented both methods and declared nothing passed. That is the drift an adapter actually hit. The case probes with the `"none"` target, which names no side and so changes nothing, and it reads the answer rather than the existence of the method, so a provider whose presence depends on the app registering a visual first still passes while it reports false.
+
 ## [0.1.1] 2026-09-04
 
 ### Added
@@ -26,5 +32,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Plain-data geometry tuples (`Vec3Tuple`, `QuatTuple`, `PoseTuple`, `RayTuple`, `HeadPose`/`HeadPoseSource`).
 - Architecture test: zero runtime dependencies, no engine imports.
 
+[0.1.2]: https://github.com/realitycollective/WebXR-Input/commits/main
 [0.1.1]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.1
 [0.1.0]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.0
