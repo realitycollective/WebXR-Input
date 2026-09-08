@@ -40,7 +40,12 @@ export interface InputProvider {
   ): Unsubscribe;
   /** Source connect/disconnect. */
   onSourcesChanged(listener: () => void): Unsubscribe;
-  /** Snapshot every live source. Called once per update tick. */
+  /**
+   * Snapshot every live source. Called once per update tick.
+   *
+   * The snapshots returned are the caller's to keep: the provider does not
+   * write to them after returning them (see {@link InputSourceSnapshot}).
+   */
   sample(): readonly InputSourceSnapshot[];
   /** Head pose, when `capabilities.headPose` is true. */
   getHeadPose?(): HeadPose;

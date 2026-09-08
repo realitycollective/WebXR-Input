@@ -22,6 +22,14 @@ export type InputSourceKind =
  * One live input source, engine-normalised and sampled once per update.
  * Fields the provider cannot supply are simply absent - consumers gate on
  * {@link InputCapabilities}, not on per-frame presence checks.
+ *
+ * Ownership: a snapshot, and every tuple inside it, belongs to whoever
+ * `sample()` handed it to. A provider builds fresh objects on each call and
+ * never writes to a snapshot it has already returned, so a consumer may
+ * keep one across frames - the interaction runtime's velocity tracker keeps
+ * last frame's grip pose, a drag keeps its press-time ray - without copying.
+ * A provider that pools objects must therefore copy on hand-over rather
+ * than refill in place. The conformance suite checks this rule.
  */
 export interface InputSourceSnapshot {
   /**
