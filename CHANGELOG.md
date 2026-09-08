@@ -4,6 +4,16 @@ Change log for the Reality Collective WebXR Input contracts. The version below i
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Preview builds are not listed separately. The entry for a version accumulates while its previews are published, and is dated when that version is released.
 
+## [0.1.3] 2026-09-08
+
+### Added
+
+- A snapshot-ownership case in `inputProviderContractCases()`: a snapshot must not change after the next `sample()`. It catches a provider that refills pooled objects in place, which every other case lets through and which silently breaks every consumer that keeps a snapshot.
+
+### Changed
+
+- The ownership rule for `InputSourceSnapshot` and `PointerSample` is now written into the contracts: a snapshot, and every tuple inside it, belongs to whoever `sample()` handed it to, and a provider never writes to one it has already returned. This is what the interaction runtime's velocity tracker, its pointer bridge and `getSource` already assumed; stating it makes it a promise a provider has to keep, and it rules out reusing snapshot objects across frames inside a provider.
+
 ## [0.1.2] 2026-09-05
 
 ### Added
@@ -32,6 +42,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Plain-data geometry tuples (`Vec3Tuple`, `QuatTuple`, `PoseTuple`, `RayTuple`, `HeadPose`/`HeadPoseSource`).
 - Architecture test: zero runtime dependencies, no engine imports.
 
-[0.1.2]: https://github.com/realitycollective/WebXR-Input/commits/main
+[0.1.3]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.3
+[0.1.2]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.2
 [0.1.1]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.1
 [0.1.0]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.0

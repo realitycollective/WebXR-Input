@@ -147,6 +147,25 @@ const CASES: readonly InputProviderContractCase[] = [
     },
   },
   {
+    name: "a snapshot is left alone once it has been handed over",
+    run(provider) {
+      // The ownership rule on InputSourceSnapshot: a provider never writes to
+      // a snapshot it has already returned. A provider that refilled pooled
+      // objects in place would pass every other case and still break every
+      // consumer that keeps a snapshot, so the check is a second sample()
+      // followed by a comparison of the first against a copy taken before it.
+      const before = provider.sample();
+      const copies = before.map((source) => JSON.stringify(source));
+      provider.sample();
+      before.forEach((source, index) => {
+        assert(
+          JSON.stringify(source) === copies[index],
+          `snapshot "${source.id}" changed after the next sample(); a provider must hand over fresh objects, not refill pooled ones`,
+        );
+      });
+    },
+  },
+  {
     name: "subscriptions return an unsubscribe that can be called",
     run(provider) {
       const offCapabilities = provider.onCapabilitiesChanged(noop);

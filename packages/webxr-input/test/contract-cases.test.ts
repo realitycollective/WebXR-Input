@@ -344,3 +344,22 @@ describe("the session-cycle case", () => {
     ).toThrow(/must not be called again/);
   });
 });
+
+describe("the snapshot ownership case", () => {
+  it("passes a provider whose delivered snapshots keep their values", () => {
+    expect(() => contractCase("left alone").run(conforming())).not.toThrow();
+  });
+
+  it("fails a provider that refills a pooled snapshot in place", () => {
+    const pooled = { ...SNAPSHOT };
+    let calls = 0;
+    const provider = broken({
+      sample: () => {
+        pooled.select = calls % 2;
+        calls += 1;
+        return [pooled];
+      },
+    });
+    expect(() => contractCase("left alone").run(provider)).toThrow(/changed after the next sample/);
+  });
+});

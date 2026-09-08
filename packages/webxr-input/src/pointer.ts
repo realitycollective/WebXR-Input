@@ -7,6 +7,10 @@ import type { Unsubscribe, Vec3Tuple } from "./types.js";
  * in `@realitycollective/webxr-uiextensions`, so a single object can drive
  * BOTH the UI Extensions windowing and anything else that consumes pointer
  * streams - the coexistence contract between the two families.
+ *
+ * Once delivered, a sample and its tuples belong to the listener: the
+ * source never writes to them again, so a listener may keep one across
+ * frames without copying, exactly as with {@link InputSourceSnapshot}.
  */
 export interface PointerSample {
   /** Pointer world position (ray origin or touch point). */
