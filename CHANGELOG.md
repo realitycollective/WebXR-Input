@@ -4,6 +4,13 @@ Change log for the Reality Collective WebXR Input contracts. The version below i
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Preview builds are not listed separately. The entry for a version accumulates while its previews are published, and is dated when that version is released.
 
+## [0.1.4]
+
+### Added
+
+- `packages/webxr-input/test/import-surface.test.ts`, shared with every Reality Collective repository, runs `scripts/import-surface.mjs` over every published package and fails an import of a name that a dependency only re-exports from another package (three.js maths through `@iwsdk/core`, the case that broke a consumer of the UI Extensions adapter), and any bare import of a package the manifest does not declare. This repository had no violations; the gate is here so it stays that way.
+- `verify:pack` now lints the shape of what ships: publint over every package directory, with warnings counted as errors, and attw (Are The Types Wrong) over every packed tarball, resolving the published types under node10, node16 and bundler resolution. `cjs-resolves-to-esm` is ignored by design, because every package is ESM-only and a require() caller is expected to use a dynamic import. Both run offline on the tarballs the script already builds; `publint` and `@arethetypeswrong/cli` are dev dependencies. The script stays identical across the Reality Collective repositories.
+
 ## [0.1.3] 2026-09-08
 
 ### Added
