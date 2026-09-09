@@ -12,7 +12,8 @@
     "typecheck": "npm --workspace @realitycollective/webxr-input run typecheck",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "verify:pack": "node scripts/verify-pack.mjs"
+    "verify:pack": "node scripts/verify-pack.mjs",
+    "release": "node scripts/release.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
