@@ -34,16 +34,23 @@ Both families read the same contracts, so one engine adapter feeds both.
 import {
   satisfies,
   unmetRequirements,
-  NO_CAPABILITIES,
-  type InputCapabilities,
+  type InputCapabilityRequirement,
   type InputProvider,
 } from "@realitycollective/webxr-input";
 
-// Ask what the current runtime supports before enabling a behaviour.
-const required: Partial<InputCapabilities> = { rays: true, grabs: "native" };
+// Ask what the current runtime supports before enabling a behaviour. A
+// requirement is a name from INPUT_CAPABILITY_REQUIREMENTS: "rays", "pokes",
+// "grabs" (pose-only or native), "grabsNative", "handJoints", "pinch",
+// "buttonsAxes", "gaze", "pointer2d", "headPose", "haptics" or "presence".
+const required: InputCapabilityRequirement[] = ["rays", "grabsNative"];
 
-if (!satisfies(provider.capabilities, required)) {
-  console.warn("degraded:", unmetRequirements(provider.capabilities, required));
+// satisfies() checks one requirement; unmetRequirements() filters a list.
+if (!satisfies(provider.capabilities, "rays")) {
+  console.warn("no ray targeting on this runtime");
+}
+const missing = unmetRequirements(provider.capabilities, required);
+if (missing.length > 0) {
+  console.warn("degraded:", missing); // e.g. ["grabsNative"] on a runtime without native grab
 }
 ```
 
