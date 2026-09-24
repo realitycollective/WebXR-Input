@@ -1,5 +1,10 @@
 # WebXR Input
 
+| Branch | Build | Publish | Published on npm |
+| --- | --- | --- | --- |
+| `main` | [![main build](https://img.shields.io/github/actions/workflow/status/realitycollective/WebXR-Input/ci.yml?branch=main&label=build)](https://github.com/realitycollective/WebXR-Input/actions/workflows/ci.yml?query=branch%3Amain) | [![main publish](https://img.shields.io/github/actions/workflow/status/realitycollective/WebXR-Input/publish-npm.yml?branch=main&label=publish)](https://github.com/realitycollective/WebXR-Input/actions/workflows/publish-npm.yml?query=branch%3Amain) | [![npm latest](https://img.shields.io/npm/v/@realitycollective/webxr-input/latest?label=npm%20latest)](https://www.npmjs.com/package/@realitycollective/webxr-input?activeTab=versions) |
+| `development` | [![development build](https://img.shields.io/github/actions/workflow/status/realitycollective/WebXR-Input/ci.yml?branch=development&label=build)](https://github.com/realitycollective/WebXR-Input/actions/workflows/ci.yml?query=branch%3Adevelopment) | [![development publish](https://img.shields.io/github/actions/workflow/status/realitycollective/WebXR-Input/publish-npm.yml?branch=development&label=publish)](https://github.com/realitycollective/WebXR-Input/actions/workflows/publish-npm.yml?query=branch%3Adevelopment) | [![npm preview](https://img.shields.io/npm/v/@realitycollective/webxr-input/preview?label=npm%20preview)](https://www.npmjs.com/package/@realitycollective/webxr-input?activeTab=versions) |
+
 **`@realitycollective/webxr-input`** describes XR input in plain TypeScript types: where a hand or controller is pointing, what it is touching, and what the device can actually do.
 
 It has no dependency on any 3D engine and no runtime dependencies at all. A test enforces both. That is what lets the Interactions and UI Extensions libraries share one description of input, so an engine adapter is written once and feeds both.
@@ -74,8 +79,8 @@ The same two workflows, with the same names, ship in every Reality Collective Ty
 
 | Workflow | Trigger | Does |
 | --- | --- | --- |
-| `ci.yml` | every PR + push to `main` / `development` | build, typecheck, test with 100% coverage gates, `verify:pack` |
-| `publish-npm.yml` | manual dispatch | packs and publishes to **npmjs.com** with provenance. **Defaults to a dry run** |
+| `ci.yml` | every PR + push to `main` / `development` | build, typecheck, test with 100% coverage gates, `verify:pack`. After a merged PR passes, it queues a publish dry run on the branch the PR merged into |
+| `publish-npm.yml` | manual dispatch, plus the dry run CI queues after a merged PR | packs and publishes to **npmjs.com** with provenance. **Defaults to a dry run** |
 
 ## Releasing
 
