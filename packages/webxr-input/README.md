@@ -26,7 +26,7 @@ It deliberately contains **no** raycasting, no scene-graph types and no session 
 - [`@realitycollective/webxr-interactions`](https://github.com/realitycollective/WebXR-Interactions) - interactables, interactors and behaviours
 - [`@realitycollective/webxr-uiextensions`](https://github.com/realitycollective/WebXR-UIExtensions) - spatial windowing, docking and controls
 
-Both families read the same contracts, so one engine adapter feeds both.
+Both families read the same contracts, so one engine adapter feeds both. That includes the native one: `@realitycollective/native-interactions` implements `InputProvider` over the input slice a native XR app provides, so an app built on these contracts runs unchanged in a native host.
 
 ## Usage
 

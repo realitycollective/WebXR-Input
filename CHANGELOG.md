@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [0.1.5]
 
+### Added
+
+- `MemoryInputProvider`, an in-memory `InputProvider` and the family's mock. The package shipped `inputProviderContractCases()` but nothing to run them against outside a headset, so every headless consumer and every new adapter had to write its own provider first. The mock reports two tracked hands with fixed poses, declares every capability it serves, and hands over fresh snapshots on every `sample()`, as the ownership rule on `InputSourceSnapshot` requires. `enterSession()` and `exitSession()` are the driver hooks the contract suite uses, and `isPresenceVisible()` and `getPresenceModality()` let a test read back what presence calls did. It passes every contract case, which `test/memory-input-provider.test.ts` checks. It came from a team building a native host, whose version passed the suite under Node and Hermes. Their version used a flat six-number `ray` and an `orientation` head-pose key, and a type cast hid both. The shipped mock uses `RayTuple` and `HeadPose` as declared. The `InputProvider` contract is unchanged.
+
+### Changed
+
+- README - the adapter lists now name the native platform. A native XR app that embeds a JavaScript engine gets its `InputProvider` from `@realitycollective/native-interactions`, as every other engine gets its provider from its own interactions adapter. The contracts are unchanged, because a native provider needs nothing the web providers do not.
+
 ### Fixed
 
 - README - the capability negotiation example called `satisfies(capabilities, required)` with a `Partial<InputCapabilities>` object, a signature the package never had. `satisfies` takes one `InputCapabilityRequirement` name and `unmetRequirements` takes a list of them; the example now shows both, with the requirement names listed.
