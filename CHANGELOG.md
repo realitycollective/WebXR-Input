@@ -4,6 +4,20 @@ Change log for the Reality Collective WebXR Input contracts. The version below i
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Preview builds are not listed separately. The entry for a version accumulates while its previews are published, and is dated when that version is released.
 
+## [0.1.5] - 2026-09-24
+
+### Added
+
+- `MemoryInputProvider`, an in-memory `InputProvider` and the family's mock. The package shipped `inputProviderContractCases()` but nothing to run them against outside a headset, so every headless consumer and every new adapter had to write its own provider first. The mock reports two tracked hands with fixed poses, declares every capability it serves, and hands over fresh snapshots on every `sample()`, as the ownership rule on `InputSourceSnapshot` requires. `enterSession()` and `exitSession()` are the driver hooks the contract suite uses, and `isPresenceVisible()` and `getPresenceModality()` let a test read back what presence calls did. It passes every contract case, which `test/memory-input-provider.test.ts` checks. It came from a team building a native host, whose version passed the suite under Node and Hermes. Their version used a flat six-number `ray` and an `orientation` head-pose key, and a type cast hid both. The shipped mock uses `RayTuple` and `HeadPose` as declared. The `InputProvider` contract is unchanged.
+
+### Changed
+
+- README - the adapter lists now name the native platform. A native XR app that embeds a JavaScript engine gets its `InputProvider` from `@realitycollective/native-interactions`, as every other engine gets its provider from its own interactions adapter. The contracts are unchanged, because a native provider needs nothing the web providers do not.
+
+### Fixed
+
+- README - the capability negotiation example called `satisfies(capabilities, required)` with a `Partial<InputCapabilities>` object, a signature the package never had. `satisfies` takes one `InputCapabilityRequirement` name and `unmetRequirements` takes a list of them; the example now shows both, with the requirement names listed.
+
 ## [0.1.4] - 2026-09-09
 
 ### Added
@@ -49,6 +63,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Plain-data geometry tuples (`Vec3Tuple`, `QuatTuple`, `PoseTuple`, `RayTuple`, `HeadPose`/`HeadPoseSource`).
 - Architecture test: zero runtime dependencies, no engine imports.
 
+[0.1.5]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.5
 [0.1.4]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.4
 [0.1.3]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.3
 [0.1.2]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.2
