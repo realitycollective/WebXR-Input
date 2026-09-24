@@ -32,8 +32,8 @@ for (const contractCase of inputProviderContractCases()) {
    ↑                          ↑
 webxr-interactions core     webxr-uiextensions core (adoption planned -
    ↑                          replaces its local duplicate pointer/head types)
-engine adapters: threejs- / iwsdk- / xrblocks-interactions,
-                 iwsdk- / xrblocks-uiextensions
+engine adapters: threejs- / babylon- / iwsdk- / xrblocks- / native-interactions,
+                 iwsdk- / xrblocks- / native-uiextensions
 ```
 
 Adapters implement `InputProvider`; family cores consume it; **apps never install this package directly** - each family re-exports all of it.
@@ -117,7 +117,7 @@ The vendors fund neutrality at the data layer (input profiles); nobody's incenti
 
 ## What this stack is and is not
 
-The Reality Collective WebXR packages aim at one outcome: an app's logic, input handling, interactions and UI should not care which engine hosts them. Each family ships an engine-free core and thin adapters for Meta IWSDK, plain three.js and WebXR, and Google XR Blocks. When an app still has to reach into the host, either a contract is missing, which is a bug to report, or the app is overreaching.
+The Reality Collective WebXR packages aim at one outcome: an app's logic, input handling, interactions and UI should not care which engine hosts them. Each family ships an engine-free core and thin adapters for Meta IWSDK, plain three.js and WebXR, Google XR Blocks, and native XR apps (OpenXR, visionOS) that embed a JavaScript engine. When an app still has to reach into the host, either a contract is missing, which is a bug to report, or the app is overreaching.
 
 Portable world-building is not a current promise. Scene content (meshes, prefabs, placement) is built by the app, ideally behind a factory interface the app owns, so that a second host can implement the same factories. A shared content descriptor, following the shape of the UI family's `SceneDescriptor`, will be considered only when a second host is actually targeted. Meta's `iwsdk.scene.v1` format is an acceptable authoring interchange in the meantime.
 
