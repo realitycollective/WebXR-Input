@@ -4,6 +4,12 @@ Change log for the Reality Collective WebXR Input contracts. The version below i
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Preview builds are not listed separately. The entry for a version accumulates while its previews are published, and is dated when that version is released.
 
+## [0.1.6] - 2026-09-28
+
+### Changed
+
+- The contract now states the semantics a native host had to guess. `InputSourceSnapshot.gripPose` is the WebXR GRIP space, for a hand the runtime's grip pose (WebXR `gripSpace`, OpenXR `/input/grip/pose`), which IWSDK reads, and not a hand joint: its frame has `-Z` toward the thumb and `+Y` up the arm, where an OpenXR joint such as `XR_HAND_JOINT_PALM_EXT` has `-Y` out of the palm, so a provider that has only joints must convert. `indexTip` is the ray origin for a controller, as IWSDK's input rig makes it, so a controller pokes as a fingertip does. `nativeGrabbing` is equivalent to a `grab` hint, and a provider supplies one of the two. `sampleHints()` is frame-fresh. Who derives velocity is decided per snapshot: velocity a provider supplies is used as it is, and the interaction runtime's tracker fills in only what a snapshot lacks, so no capability flag is needed. `pulse` intensity is 0..1 and a provider clamps it. Documentation only; no type or behaviour changed.
+
 ## [0.1.5] - 2026-09-24
 
 ### Added
@@ -63,6 +69,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Plain-data geometry tuples (`Vec3Tuple`, `QuatTuple`, `PoseTuple`, `RayTuple`, `HeadPose`/`HeadPoseSource`).
 - Architecture test: zero runtime dependencies, no engine imports.
 
+[0.1.6]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.6
 [0.1.5]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.5
 [0.1.4]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.4
 [0.1.3]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.3
