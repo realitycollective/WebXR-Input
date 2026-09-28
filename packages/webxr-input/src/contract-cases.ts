@@ -166,6 +166,57 @@ const CASES: readonly InputProviderContractCase[] = [
     },
   },
   {
+    name: "an eye-gaze snapshot that carries a ray leaves no hand or controller far ray",
+    run(provider) {
+      // IWSDK: "Hand/controller far rays are disabled while gaze is
+      // available" (`XRInputManager.updatePointers`). A gaze snapshot with a
+      // ray means gaze owns far targeting this frame, so no hand or
+      // controller may still offer one. Near data (grip, index tip) stays.
+      if (!provider.getCapabilities().eyeGaze) return;
+      const sources = provider.sample();
+      const gaze = sources.find((source) => source.kind === "gaze");
+      if (!gaze?.ray) return;
+      for (const source of sources) {
+        assert(
+          !((source.kind === "hand" || source.kind === "controller") && source.ray !== undefined),
+          `while eye gaze owns far targeting, "${source.id}" must not carry a ray; IWSDK disables hand and controller far rays`,
+        );
+      }
+    },
+  },
+  {
+    name: "at most one eye-gaze snapshot is sampled",
+    run(provider) {
+      // Gaze has no handedness: IWSDK keeps one global `GazePointer`.
+      if (!provider.getCapabilities().eyeGaze) return;
+      const count = provider.sample().filter((source) => source.kind === "gaze").length;
+      assert(count <= 1, `a provider with eyeGaze samples at most one "gaze" snapshot, got ${String(count)}`);
+    },
+  },
+  {
+    name: "an eye-gaze snapshot owned by a hand carries that hand's selector pose",
+    run(provider) {
+      // The pinching hand takes the pointer over (`pointerTransformFollowsHand`),
+      // which the runtime can only do from the hand's ray-space pose.
+      if (!provider.getCapabilities().eyeGaze) return;
+      for (const source of provider.sample()) {
+        if (source.kind !== "gaze") continue;
+        if (source.handedness === "none") {
+          assert(
+            source.selectorPose === undefined,
+            `gaze snapshot "${source.id}" has no owning hand, so it must not carry a selectorPose`,
+          );
+          continue;
+        }
+        const pose = source.selectorPose;
+        assert(
+          pose !== undefined && isFinitePose(pose),
+          `gaze snapshot "${source.id}" is owned by the ${source.handedness} hand, so it must carry that hand's selectorPose`,
+        );
+      }
+    },
+  },
+  {
     name: "subscriptions return an unsubscribe that can be called",
     run(provider) {
       const offCapabilities = provider.onCapabilitiesChanged(noop);
@@ -212,6 +263,14 @@ function hasKey(table: object, key: string): boolean {
 
 function isUnitScalar(value: unknown): boolean {
   return typeof value === "number" && value >= 0 && value <= 1;
+}
+
+function isFinitePose(pose: { position: readonly number[]; quaternion: readonly number[] }): boolean {
+  return (
+    pose.position.length === 3 &&
+    pose.quaternion.length === 4 &&
+    [...pose.position, ...pose.quaternion].every((n) => Number.isFinite(n))
+  );
 }
 
 function noop(): void {

@@ -4,6 +4,13 @@ Change log for the Reality Collective WebXR Input contracts. The version below i
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Preview builds are not listed separately. The entry for a version accumulates while its previews are published, and is dated when that version is released.
 
+## [0.1.7] - 2026-09-28
+
+### Added
+
+- Eye gaze and pinch, the far-targeting mode Meta IWSDK 1.0.0 switches to when a session grants eye tracking, restated as pure logic in `eye-gaze.ts` so every provider hands consumers the same snapshots. `InputCapabilities.eyeGaze` says a tracked eye-gaze source is available (IWSDK: `xr.features.gazeTracking` granted and an `XRInputSource` with `targetRayMode === "gaze"`); `gaze` keeps meaning head gaze. `EyeGazeInput` applies the rule to a provider's raw snapshots: from the first valid pose gaze owns far targeting and hand and controller snapshots lose their `ray` (grip and index tip stay), one `"gaze"` snapshot (`EYE_GAZE_SOURCE_ID`) carries the one-euro-filtered gaze ray, either hand's pinch commits a selection that the hand owns until release, a pinch held from before never becomes a gaze click, far targeting survives `trackingLossGraceSeconds` (5 s) of invalid poses and returns at once when the source goes, and a committed hold survives the grace. The owning hand's ray-space pose travels on the new `InputSourceSnapshot.selectorPose`, so the interaction runtime can make a gaze-started drag follow the hand (`pointerTransformFollowsHand`). `EYE_GAZE_DEFAULTS` holds IWSDK's constants (cone 5 degrees, 30 m, dwell window 0.15 s, filter 1.5 / 0.05 / 1, grace 5 s), `EyeGazeFilter` and `OneEuroScalar` are the smoother, and `rayFromPose` / `rayPoseFromRay` convert between a pose and its ray for a provider that has only one of them.
+- `inputProviderContractCases()` gains three cases a provider with `eyeGaze` must pass: a gaze snapshot that carries a ray leaves no hand or controller far ray, at most one gaze snapshot is sampled, and a gaze snapshot owned by a hand carries that hand's `selectorPose` (and one owned by none carries none). `MemoryInputProvider` takes `{ eyeGaze: true }` and passes them, with `pinch(side, strength)` and `setGazePose(pose)` to drive a selection and a blink.
+
 ## [0.1.6] - 2026-09-28
 
 ### Changed
@@ -69,6 +76,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Plain-data geometry tuples (`Vec3Tuple`, `QuatTuple`, `PoseTuple`, `RayTuple`, `HeadPose`/`HeadPoseSource`).
 - Architecture test: zero runtime dependencies, no engine imports.
 
+[0.1.7]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.7
 [0.1.6]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.6
 [0.1.5]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.5
 [0.1.4]: https://github.com/realitycollective/WebXR-Input/releases/tag/v0.1.4

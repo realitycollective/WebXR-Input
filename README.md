@@ -13,7 +13,8 @@ It has no dependency on any 3D engine and no runtime dependencies at all. A test
 
 | Piece | Purpose |
 | --- | --- |
-| `InputCapabilities` + `satisfies`/`unmetRequirements` | What a provider can deliver (rays, pokes, grabs `none/poseOnly/native`, hand joints, pinch, buttons/axes, gaze, 2D pointer, head pose, haptics, presence), derived from the LIVE session - and the negotiation helpers consumers gate behaviour on. |
+| `InputCapabilities` + `satisfies`/`unmetRequirements` | What a provider can deliver (rays, pokes, grabs `none/poseOnly/native`, hand joints, pinch, buttons/axes, gaze, eye gaze, 2D pointer, head pose, haptics, presence), derived from the LIVE session - and the negotiation helpers consumers gate behaviour on. |
+| `EyeGazeInput`, `EYE_GAZE_DEFAULTS`, `EyeGazeFilter` | The eye-gaze-and-pinch rule (IWSDK 1.0.0): from the first valid gaze pose, hand and controller far rays drop and one `"gaze"` snapshot carries the filtered gaze ray; either hand's pinch commits a selection and owns it until release; far targeting survives 5 s of invalid poses. Every provider feeds it the same facts, so the contract is one rule on every platform. |
 | `INPUT_CAPABILITY_REQUIREMENTS` | The same requirements as runtime data, with `InputCapabilityRequirement` derived from it. A test checks it against the capability keys, so a capability cannot be added in one place only. |
 | `InputSourceSnapshot` | One normalised input source per frame: ray, grip pose, index fingertip, select/squeeze 0..1, optional grip velocities, native-grab flag, haptics availability. `id` is opaque - read `handedness` for the side, never parse the id. |
 | `velocityBetween` + `linearVelocity` / `angularVelocity` | Grip velocity for throws and flicks. Providers that report it natively fill the snapshot fields; for the rest, `velocityBetween(prev, next, dtSeconds)` derives metres per second and radians per second from two consecutive grip poses. |

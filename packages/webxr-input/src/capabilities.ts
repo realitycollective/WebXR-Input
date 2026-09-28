@@ -31,6 +31,15 @@ export interface InputCapabilities {
   buttonsAxes: boolean;
   /** Head-gaze usable as a pointer (always derivable from headPose). */
   gaze: boolean;
+  /**
+   * A tracked eye-gaze ray is available: the session granted eye tracking
+   * and reports a gaze input source. IWSDK: `xr.features.gazeTracking`
+   * granted and an `XRInputSource` with `targetRayMode === "gaze"`. While it
+   * is, the provider samples one `"gaze"` snapshot and drops hand and
+   * controller far rays (see `eye-gaze.ts`). Distinct from `gaze`, which is
+   * head gaze and never needs eye tracking.
+   */
+  eyeGaze: boolean;
   /** 2D pointer fallback (mouse/touch) projected into the scene. */
   pointer2d: boolean;
   /** A live head pose is available. */
@@ -50,6 +59,7 @@ export const NO_CAPABILITIES: Readonly<InputCapabilities> = Object.freeze({
   pinch: false,
   buttonsAxes: false,
   gaze: false,
+  eyeGaze: false,
   pointer2d: false,
   headPose: false,
   haptics: false,
@@ -71,6 +81,7 @@ export const INPUT_CAPABILITY_REQUIREMENTS = [
   "pinch",
   "buttonsAxes",
   "gaze",
+  "eyeGaze",
   "pointer2d",
   "headPose",
   "haptics",

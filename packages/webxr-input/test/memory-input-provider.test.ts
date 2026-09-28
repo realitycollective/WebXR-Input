@@ -85,3 +85,38 @@ describe("MemoryInputProvider", () => {
     expect(() => off()).not.toThrow();
   });
 });
+
+describe("MemoryInputProvider with eye gaze", () => {
+  it("passes every contract case, owning far targeting and selecting through a pinch", () => {
+    const provider = new MemoryInputProvider({ eyeGaze: true });
+    const driver = { enterSession: () => provider.enterSession(), exitSession: () => provider.exitSession() };
+    expect(provider.getCapabilities().eyeGaze).toBe(true);
+    for (const contractCase of inputProviderContractCases()) contractCase.run(provider, driver);
+    // No hand carries a far ray, and the gaze snapshot is there with a ray.
+    let sources = provider.sample();
+    expect(sources.filter((s) => s.kind === "hand").every((s) => s.ray === undefined)).toBe(true);
+    expect(sources.find((s) => s.kind === "gaze")?.ray).toBeDefined();
+    // A pinch on the left hand owns the selection and carries its selector pose.
+    provider.pinch("left", 1);
+    sources = provider.sample();
+    const gaze = sources.find((s) => s.kind === "gaze")!;
+    expect(gaze.handedness).toBe("left");
+    expect(gaze.select).toBe(1);
+    expect(gaze.selectorPose).toBeDefined();
+    // A blink: the gaze snapshot loses its ray but the hold continues.
+    provider.setGazePose(null);
+    const blink = provider.sample().find((s) => s.kind === "gaze")!;
+    expect(blink.handedness).toBe("left");
+    expect(blink.ray).toBeUndefined();
+    provider.setGazePose({ position: [0, 1.6, 0], quaternion: [0, 0, 0, 1] });
+    // The suite's session cycle ends the session, which forgets the hold.
+    for (const contractCase of inputProviderContractCases()) contractCase.run(provider, driver);
+    expect(provider.sample().find((s) => s.kind === "gaze")?.handedness).toBe("none");
+  });
+
+  it("reports no eye gaze by default", () => {
+    const provider = new MemoryInputProvider();
+    expect(provider.getCapabilities().eyeGaze).toBe(false);
+    expect(provider.sample().some((s) => s.kind === "gaze")).toBe(false);
+  });
+});

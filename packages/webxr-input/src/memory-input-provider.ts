@@ -1,11 +1,22 @@
 import { NO_CAPABILITIES, type InputCapabilities } from "./capabilities.js";
+import { EyeGazeInput, rayPoseFromRay, type EyeGazeSide } from "./eye-gaze.js";
 import type { InputProvider } from "./provider.js";
 import type {
   Handedness,
   InputSourceSnapshot,
   PresenceModality,
 } from "./source.js";
-import type { HeadPose, Unsubscribe } from "./types.js";
+import type { HeadPose, PoseTuple, Unsubscribe } from "./types.js";
+
+export interface MemoryInputProviderOptions {
+  /**
+   * Report a tracked eye-gaze source, straight ahead from the head, and run
+   * the eye-gaze rule over the two hands: their far rays drop, one `"gaze"`
+   * snapshot appears, and a pinch (see {@link MemoryInputProvider.pinch})
+   * selects through it. Default false.
+   */
+  eyeGaze?: boolean;
+}
 
 /**
  * An in-memory {@link InputProvider}: the family's mock, for headless tests
@@ -46,6 +57,14 @@ export class MemoryInputProvider implements InputProvider {
   private readonly sourceListeners = new Set<() => void>();
   private readonly visible: Record<"left" | "right", boolean> = { left: true, right: true };
   private modality: PresenceModality = "auto";
+  private readonly eyeGaze: EyeGazeInput | null;
+  private readonly pinches: Record<EyeGazeSide, number> = { left: 0, right: 0.2 };
+  private gazePose: PoseTuple | null = { position: [0, 1.6, 0], quaternion: [0, 0, 0, 1] };
+
+  constructor(options: MemoryInputProviderOptions = {}) {
+    this.eyeGaze = options.eyeGaze ? new EyeGazeInput() : null;
+    if (this.eyeGaze) this.capabilities.eyeGaze = true;
+  }
 
   public getCapabilities(): InputCapabilities {
     return { ...this.capabilities };
@@ -71,26 +90,44 @@ export class MemoryInputProvider implements InputProvider {
    * written to again.
    */
   public sample(): readonly InputSourceSnapshot[] {
-    return [
+    const left: InputSourceSnapshot = {
+      id: "left-hand",
+      kind: "hand",
+      handedness: "left",
+      select: this.pinches.left,
+      squeeze: 0,
+      ray: { origin: [0, 1.4, 0], direction: [0, 0, -1] },
+      indexTip: [0.1, 1.3, -0.3],
+    };
+    const right: InputSourceSnapshot = {
+      id: "right-hand",
+      kind: "hand",
+      handedness: "right",
+      select: this.pinches.right,
+      squeeze: 0,
+      ray: { origin: [0, 1.4, 0], direction: [0, 0, -1] },
+      indexTip: [-0.1, 1.3, -0.35],
+    };
+    if (!this.eyeGaze) return [left, right];
+    return this.eyeGaze.update(
       {
-        id: "left-hand",
-        kind: "hand",
-        handedness: "left",
-        select: 0,
-        squeeze: 0,
-        ray: { origin: [0, 1.4, 0], direction: [0, 0, -1] },
-        indexTip: [0.1, 1.3, -0.3],
+        present: true,
+        pose: this.gazePose,
+        rayPoses: { left: rayPoseFromRay(left.ray!), right: rayPoseFromRay(right.ray!) },
       },
-      {
-        id: "right-hand",
-        kind: "hand",
-        handedness: "right",
-        select: 0.2,
-        squeeze: 0,
-        ray: { origin: [0, 1.4, 0], direction: [0, 0, -1] },
-        indexTip: [-0.1, 1.3, -0.3],
-      },
-    ];
+      [left, right],
+      1 / 60,
+    );
+  }
+
+  /** Eye gaze only: set one hand's pinch strength 0..1, which the next `sample` reports. */
+  public pinch(side: EyeGazeSide, strength: number): void {
+    this.pinches[side] = strength;
+  }
+
+  /** Eye gaze only: the gaze pose the next `sample` reads, or null for a frame with no valid pose. */
+  public setGazePose(pose: PoseTuple | null): void {
+    this.gazePose = pose;
   }
 
   public getHeadPose(): HeadPose {
@@ -134,6 +171,7 @@ export class MemoryInputProvider implements InputProvider {
 
   /** Driver hook: the session ends, and capabilities are re-published. */
   public exitSession(): void {
+    this.eyeGaze?.reset();
     this.publish();
   }
 

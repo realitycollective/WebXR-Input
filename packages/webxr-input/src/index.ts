@@ -16,5 +16,6 @@ export * from "./source.js";
 export * from "./provider.js";
 export * from "./pointer.js";
 export * from "./velocity.js";
+export * from "./eye-gaze.js";
 export * from "./contract-cases.js";
 export * from "./memory-input-provider.js";
