@@ -363,3 +363,59 @@ describe("the snapshot ownership case", () => {
     expect(() => contractCase("left alone").run(provider)).toThrow(/changed after the next sample/);
   });
 });
+
+describe("the eye-gaze cases", () => {
+  const GAZE_CAPABILITIES: InputCapabilities = { ...FULL_CAPABILITIES, eyeGaze: true };
+  const gazeRay = { origin: [0, 1.6, 0], direction: [0, 0, -1] };
+  const pose = { position: [0, 1.3, 0], quaternion: [0, 0, 0, 1] };
+
+  function gazeProvider(sources: Record<string, unknown>[]): InputProvider {
+    return broken({ getCapabilities: () => GAZE_CAPABILITIES, sample: () => sources });
+  }
+
+  it("ask nothing of a provider without eye gaze, whatever it samples", () => {
+    const provider = broken({
+      sample: () => [{ ...SNAPSHOT, ray: gazeRay }, { id: "g", kind: "gaze", handedness: "left", select: 0, squeeze: 0, ray: gazeRay }],
+    });
+    for (const fragment of ["far ray", "at most one", "selector pose"]) {
+      expect(() => contractCase(fragment).run(provider)).not.toThrow();
+    }
+  });
+
+  it("pass a provider that drops the hand rays behind a gaze ray, and one whose gaze has no ray yet", () => {
+    const owning = gazeProvider([
+      { ...SNAPSHOT },
+      { id: "g", kind: "gaze", handedness: "left", select: 1, squeeze: 0, ray: gazeRay, selectorPose: pose },
+    ]);
+    const blink = gazeProvider([{ ...SNAPSHOT, ray: gazeRay }, { id: "g", kind: "gaze", handedness: "none", select: 0, squeeze: 0 }]);
+    for (const fragment of ["far ray", "at most one", "selector pose"]) {
+      expect(() => contractCase(fragment).run(owning)).not.toThrow();
+      expect(() => contractCase(fragment).run(blink)).not.toThrow();
+    }
+  });
+
+  it("reject a hand or controller that keeps its far ray while gaze owns targeting", () => {
+    const provider = gazeProvider([
+      { ...SNAPSHOT, ray: gazeRay },
+      { id: "g", kind: "gaze", handedness: "none", select: 0, squeeze: 0, ray: gazeRay },
+    ]);
+    expect(() => contractCase("far ray").run(provider)).toThrow(/must not carry a ray/);
+  });
+
+  it("reject two gaze snapshots", () => {
+    const provider = gazeProvider([
+      { id: "g1", kind: "gaze", handedness: "none", select: 0, squeeze: 0 },
+      { id: "g2", kind: "gaze", handedness: "none", select: 0, squeeze: 0 },
+    ]);
+    expect(() => contractCase("at most one").run(provider)).toThrow(/at most one/);
+  });
+
+  it("reject an owned gaze snapshot with no selector pose, and an unowned one that carries one", () => {
+    const missing = gazeProvider([{ id: "g", kind: "gaze", handedness: "right", select: 1, squeeze: 0, ray: gazeRay }]);
+    expect(() => contractCase("selector pose").run(missing)).toThrow(/must carry that hand's selectorPose/);
+    const stray = gazeProvider([{ id: "g", kind: "gaze", handedness: "none", select: 0, squeeze: 0, selectorPose: pose }]);
+    expect(() => contractCase("selector pose").run(stray)).toThrow(/must not carry a selectorPose/);
+    const broken = gazeProvider([{ id: "g", kind: "gaze", handedness: "right", select: 1, squeeze: 0, selectorPose: { position: [0, Number.NaN, 0], quaternion: [0, 0, 0, 1] } }]);
+    expect(() => contractCase("selector pose").run(broken)).toThrow(/must carry that hand's selectorPose/);
+  });
+});

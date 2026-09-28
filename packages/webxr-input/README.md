@@ -16,6 +16,7 @@ A shared vocabulary for input. It lets an interaction library, a UI library and 
 | --- | --- |
 | **Input sources** | Normalised rays, pinches, pokes, grips, hand joints, gaze and 2D pointers, addressed by handedness rather than array index |
 | **Capabilities** | What the current device can actually do, so a feature can switch itself off and say so rather than failing silently |
+| **Eye gaze** | The gaze-and-pinch rule Meta IWSDK 1.0.0 applies when a session grants eye tracking (the primary input on Meta VR Glasses), as pure logic every provider runs: `EyeGazeInput`, `EYE_GAZE_DEFAULTS`, `EyeGazeFilter`. See `src/eye-gaze.ts` |
 | **Provider** | The interface an engine adapter implements once. Consumers ask it for the current state each frame; it never pushes at them |
 | **Pointer streams** | Press, move and release events for one input source, with no reference to the engine's scene graph |
 
@@ -41,7 +42,7 @@ import {
 // Ask what the current runtime supports before enabling a behaviour. A
 // requirement is a name from INPUT_CAPABILITY_REQUIREMENTS: "rays", "pokes",
 // "grabs" (pose-only or native), "grabsNative", "handJoints", "pinch",
-// "buttonsAxes", "gaze", "pointer2d", "headPose", "haptics" or "presence".
+// "buttonsAxes", "gaze", "eyeGaze", "pointer2d", "headPose", "haptics" or "presence".
 const required: InputCapabilityRequirement[] = ["rays", "grabsNative"];
 
 // satisfies() checks one requirement; unmetRequirements() filters a list.

@@ -100,6 +100,16 @@ export interface InputSourceSnapshot {
   nativeGrabbing?: boolean;
   /** Haptics available on this source. */
   hapticsAvailable?: boolean;
+  /**
+   * Eye gaze only: the ray-space pose, world space, of the hand whose pinch
+   * owns the current gaze selection (`-Z` along its ray). Present from the
+   * frame the pinch commits until it releases, on the `"gaze"` snapshot
+   * whose `handedness` names that hand, and on no other. The interaction
+   * runtime aims a ray from it at the gaze hit, so a gaze-started drag
+   * follows the hand. IWSDK: `xrOrigin.raySpaces[hand]`, as
+   * `GazePointer.processSelector` reads it. See `eye-gaze.ts`.
+   */
+  selectorPose?: PoseTuple;
 }
 
 /** Select threshold used by consumers that need a boolean from `select`. */

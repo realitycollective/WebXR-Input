@@ -15,6 +15,7 @@ const FULL: InputCapabilities = {
   pinch: true,
   buttonsAxes: true,
   gaze: true,
+  eyeGaze: true,
   pointer2d: true,
   headPose: true,
   haptics: true,
