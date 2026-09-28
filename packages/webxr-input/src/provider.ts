@@ -52,12 +52,19 @@ export interface InputProvider {
   /**
    * Pre-resolved targeting hints for this frame (optional - providers with
    * their own targeting pipelines only). Consumed alongside {@link sample}.
+   *
+   * Frame-fresh: the hints for the frame {@link sample} just reported, never
+   * a previous frame's. A hint is used IN PLACE of the consumer's own hit
+   * tests for its source, so a stale hint would press or grab what the user
+   * has already left. An empty list means "no hints this frame", and the
+   * consumer's hit tests run.
    */
   sampleHints?(): readonly InputHitHint[];
   /**
    * Fire a haptic pulse on a source, when `capabilities.haptics` is true
    * and the source reports `hapticsAvailable`. Returns false when the
-   * pulse could not be delivered. Intensity 0..1, duration in ms.
+   * pulse could not be delivered. Intensity 0..1 (a provider clamps it),
+   * duration in ms.
    */
   pulse?(sourceId: string, intensity: number, durationMs: number): boolean;
   /**
