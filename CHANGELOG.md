@@ -4,6 +4,12 @@ Change log for the Reality Collective WebXR Input contracts. The version below i
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Preview builds are not listed separately. The entry for a version accumulates while its previews are published, and is dated when that version is released.
 
+## [0.1.9]
+
+### Changed
+
+- Dependencies on other Reality Collective repositories now follow one rule, checked by `scripts/rc-dependencies.mjs`. Going into `main`, each names the release npm tags `latest` and never a preview. Going into any other branch, each names the newest version on npm, release or preview. The rule covers every `package.json` in the repository (published packages, demos, harnesses and examples) and every copy `package-lock.json` records. A range passes only when its lowest version is the target, so `^0.1.8` passes for 0.1.8 and `^0.1.4` does not. CI runs it before the install, against the branch a pull request targets, and the publish workflow runs it before publishing. `release.mjs status` reports it. `release.mjs prepare` stops before cutting a release when a dependency names an unreleased preview of another repository, because that repository has to release first, and moves any range that is only behind. Other dependencies are out of scope. The script stays identical across the Reality Collective repositories.
+
 ## [0.1.8] - 2026-10-01
 
 ### Added
