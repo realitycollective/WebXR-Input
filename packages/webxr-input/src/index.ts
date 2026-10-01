@@ -15,6 +15,8 @@ export * from "./capabilities.js";
 export * from "./source.js";
 export * from "./provider.js";
 export * from "./pointer.js";
+export * from "./pointer-arbiter.js";
+export * from "./pointer-display.js";
 export * from "./velocity.js";
 export * from "./eye-gaze.js";
 export * from "./contract-cases.js";

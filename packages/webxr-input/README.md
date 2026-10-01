@@ -8,6 +8,8 @@ No dependency on any 3D engine, and no runtime dependencies at all. A test enfor
 npm install @realitycollective/webxr-input
 ```
 
+Preview builds publish under the `preview` dist-tag (`npm install @realitycollective/webxr-input@preview`); `latest` is the last stable line and predates the capabilities marked *preview* below.
+
 ## What it is
 
 A shared vocabulary for input. It lets an interaction library, a UI library and an engine adapter agree on what "input" means, without any of them importing a 3D engine.
@@ -19,6 +21,9 @@ A shared vocabulary for input. It lets an interaction library, a UI library and 
 | **Eye gaze** | The gaze-and-pinch rule Meta IWSDK 1.0.0 applies when a session grants eye tracking (the primary input on Meta VR Glasses), as pure logic every provider runs: `EyeGazeInput`, `EYE_GAZE_DEFAULTS`, `EyeGazeFilter`. See `src/eye-gaze.ts` |
 | **Provider** | The interface an engine adapter implements once. Consumers ask it for the current state each frame; it never pushes at them |
 | **Pointer streams** | Press, move and release events for one input source, with no reference to the engine's scene graph |
+| **Pointer arbitration** *(preview)* | `PointerArbiter`: one decision per source (touch, grab or ray) across every target set that offers candidates, with IWSDK's priority and selection lock; `PointerVisuals` name the panel or object the pointer is on |
+| **Pointer display** *(preview)* | `PointerDisplay` and `POINTER_DISPLAY_DEFAULTS` (IWSDK 1.0.0's look): the app's ray and cursor settings, and `pointerDrawing()`, which turns a decision into what a binding draws |
+| **Conformance suite** | `inputProviderContractCases()`, the checks every provider must pass, shipped as data; `MemoryInputProvider` is the in-memory reference provider for tests and tools |
 
 It deliberately contains **no** raycasting, no scene-graph types and no session management - those belong to the engine adapters that sit on top.
 
@@ -54,6 +59,11 @@ if (missing.length > 0) {
   console.warn("degraded:", missing); // e.g. ["grabsNative"] on a runtime without native grab
 }
 ```
+
+The two rules every family shares beyond the contracts themselves:
+
+- `PointerArbiter` decides once per source which pointer (touch, grab or ray) owns it, across registered interactables and UI panels alike, as IWSDK's `MultiPointer` does; the Interactions runtime and the UI Extensions window hosts register a target set each and offer their candidates. Pass one arbiter to both setups (`pointers`) so a touch on a panel retires the ray over an object and a panel cursor is reported.
+- `PointerDisplay` holds the app's ray and cursor settings (`ray: "never" | "always" | "whileHitting"`, `cursorOnObjects`, `cursorOnPanels`, `rayOnlyOnPanels`, the look), IWSDK 1.0.0's values by default, settable at run time; `pointerDrawing()` turns the arbiter's decision into what a binding draws.
 
 ## Guarantees
 

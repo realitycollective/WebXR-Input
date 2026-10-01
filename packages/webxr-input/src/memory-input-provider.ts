@@ -58,7 +58,7 @@ export class MemoryInputProvider implements InputProvider {
   private readonly visible: Record<"left" | "right", boolean> = { left: true, right: true };
   private modality: PresenceModality = "auto";
   private readonly eyeGaze: EyeGazeInput | null;
-  private readonly pinches: Record<EyeGazeSide, number> = { left: 0, right: 0.2 };
+  private readonly pinches: Record<EyeGazeSide, number> = { left: 0, right: 0 };
   private gazePose: PoseTuple | null = { position: [0, 1.6, 0], quaternion: [0, 0, 0, 1] };
 
   constructor(options: MemoryInputProviderOptions = {}) {
@@ -120,7 +120,7 @@ export class MemoryInputProvider implements InputProvider {
     );
   }
 
-  /** Eye gaze only: set one hand's pinch strength 0..1, which the next `sample` reports. */
+  /** Eye gaze only: set one hand's pinch, 1 while the runtime reports the gesture and 0 otherwise (a hand's select is binary), which the next `sample` reports. */
   public pinch(side: EyeGazeSide, strength: number): void {
     this.pinches[side] = strength;
   }
