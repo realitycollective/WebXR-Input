@@ -85,9 +85,41 @@ export interface InputSourceSnapshot {
    * Present on the same terms as {@link InputSourceSnapshot.linearVelocity}.
    */
   angularVelocity?: Vec3Tuple;
-  /** Primary select action 0..1 (trigger, pinch strength, mouse button). */
+  /**
+   * Primary select action, 0..1. What it is depends on `kind`, and every
+   * provider reports the same thing for the same kind, so the interaction
+   * runtime's thresholds (`SELECT_PRESS_THRESHOLD` 0.7, release 0.3) mean
+   * the same on every platform:
+   *
+   * - `"controller"`: the trigger's analog value (WebXR `gamepad.buttons[0]`,
+   *   OpenXR `/input/trigger/value`). Rest 0.
+   * - `"hand"`: BINARY, 1 while the runtime reports the hand's pinch
+   *   gesture and 0 otherwise, never an analog pinch strength. On the web a
+   *   hand has no gamepad: the browser fires WebXR `selectstart` and
+   *   `selectend` from the runtime's own pinch recogniser (with its own
+   *   hysteresis), and IWSDK reads `getSelecting() ? 1 : 0`
+   *   (`@iwsdk/xr-input` `xr-input-manager.js`, `readHandSelectState`;
+   *   `iwsdk-interactions` `provider.ts`). OpenXR: `XR_FB_hand_tracking_aim`
+   *   `XR_HAND_TRACKING_AIM_INDEX_PINCHING_BIT_FB`, the signal the Quest
+   *   Browser turns into `selectstart`, or `XR_EXT_hand_interaction`
+   *   `pinch_ext/ready_ext` and `pinch_ext/value` through the runtime's own
+   *   threshold. A relaxed hand reads 0. Reporting the analog strength
+   *   instead holds a grab open on a relaxed hand (a strength above 0.3
+   *   never releases), which is what the Pale Signal native host did.
+   * - `"gaze"`: the pinch of the hand that owns the selection, as above.
+   * - `"pointer2d"`: the primary button, 1 while down.
+   */
   select: number;
-  /** Secondary squeeze action 0..1 (grip button). */
+  /**
+   * Secondary squeeze action, 0..1: a controller's grip button (WebXR
+   * `gamepad.buttons[1]`, OpenXR `/input/squeeze/value`), rest 0. A HAND
+   * reports 0 always: it has no squeeze on the web (IWSDK reads the gamepad
+   * squeeze button, which a hand does not have), and a hand's grab is its
+   * pinch through `select` (the interaction runtime's `selectAsGrab`, IWSDK's
+   * `useHandPinchForGrab`). OpenXR's `grasp_ext` is NOT a hand's squeeze:
+   * a relaxed hand keeps it above the release threshold and a grab never
+   * ends.
+   */
   squeeze: number;
   /**
    * True while the engine reports this source natively grabbing something.

@@ -166,6 +166,26 @@ const CASES: readonly InputProviderContractCase[] = [
     },
   },
   {
+    name: "a hand's select is 0 or 1 and its squeeze is 0",
+    run(provider) {
+      // A hand's pinch is the runtime's gesture, binary, as the browser's
+      // selectstart/selectend give it; its squeeze does not exist. A
+      // provider that reported an analog pinch strength or a grasp value
+      // would hold grabs open on a relaxed hand.
+      for (const source of provider.sample()) {
+        if (source.kind !== "hand") continue;
+        assert(
+          source.select === 0 || source.select === 1,
+          `hand "${source.id}" reports select ${source.select}; a hand's select is 1 while the runtime reports its pinch gesture and 0 otherwise, never a strength`,
+        );
+        assert(
+          source.squeeze === 0,
+          `hand "${source.id}" reports squeeze ${source.squeeze}; a hand has no squeeze (its grab is its pinch through select) and reports 0`,
+        );
+      }
+    },
+  },
+  {
     name: "an eye-gaze snapshot that carries a ray leaves no hand or controller far ray",
     run(provider) {
       // IWSDK: "Hand/controller far rays are disabled while gaze is

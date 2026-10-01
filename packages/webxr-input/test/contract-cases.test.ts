@@ -14,7 +14,7 @@ const SNAPSHOT: InputSourceSnapshot = {
   id: "left-hand",
   kind: "hand",
   handedness: "left",
-  select: 0.5,
+  select: 1,
   squeeze: 0,
 };
 
