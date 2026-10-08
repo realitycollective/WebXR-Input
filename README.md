@@ -21,6 +21,9 @@ It has no dependency on any 3D engine and no runtime dependencies at all. A test
 | `InputProvider` | The single interface an engine adapter implements: pull-based `sample()`, capability-change events, optional pre-resolved hit hints (for engines with their own targeting), optional haptic `pulse`, optional `setPresenceVisible`/`setPresenceModality` for showing and hiding the user's own hands and controllers. |
 | `inputProviderContractCases()` | The provider conformance suite as data, not as tests. Each case is a `name` plus a `run(provider, driver?)` that throws on failure, so an adapter iterates them with its own test runner and cases needing a driver hook it cannot fake simply pass. |
 | `PointerSample` / `PointerInputSource` | Press-move-release pointer streams - structurally identical to the UI Extensions' pointer contract, so one input stack drives both families. |
+| `PointerArbiter` + `PointerVisuals` | One pointer decision per source (touch, grab or ray) across every target set that offers candidates, interactables and UI panels alike, with IWSDK's priority and selection lock (IWSDK's `MultiPointer`). The Interactions runtime and the UI Extensions hosts each register a target set. |
+| `PointerDisplay` + `POINTER_DISPLAY_DEFAULTS` + `pointerDrawing()` | The ray line and cursor disc as app configuration, IWSDK 1.0.0's look by default, settable at run time; `pointerDrawing()` turns the arbiter's decision into what a binding draws and a native host is handed. |
+| `MemoryInputProvider` | An in-memory `InputProvider` that passes every contract case, for headless tests and tools. |
 | Tuples (`Vec3Tuple`, `QuatTuple`, `PoseTuple`, `RayTuple`, `HeadPose`) | Plain-data geometry - no engine types anywhere. |
 
 The conformance suite ships runner-free because every adapter repository already has its own runner. An adapter's test file is a loop:
@@ -33,16 +36,16 @@ for (const contractCase of inputProviderContractCases()) {
 
 ## Who consumes it
 
-```
+```text
 @realitycollective/webxr-input          ← this package (contracts; zero deps)
    ↑                          ↑
-webxr-interactions core     webxr-uiextensions core (adoption planned -
-   ↑                          replaces its local duplicate pointer/head types)
+webxr-interactions core     webxr-uiextensions core
+   ↑                          ↑
 engine adapters: threejs- / babylon- / iwsdk- / xrblocks- / native-interactions,
-                 iwsdk- / xrblocks- / native-uiextensions
+                 threejs- / iwsdk- / xrblocks- / native-uiextensions
 ```
 
-Adapters implement `InputProvider`; family cores consume it; **apps never install this package directly** - each family re-exports all of it.
+Adapters implement `InputProvider`; family cores consume it. **Apps rarely install this package directly.** The Interactions packages re-export all of it, `PointerArbiter` included. The UI Extensions packages re-export the pose and pointer types they use (`Vec3Tuple`, `QuatTuple`, `HeadPose`, `HeadPoseSource`, `PointerSample`).
 
 ## Rules of the road
 
@@ -92,12 +95,11 @@ Work branches off `main`; PRs target `main`. Releases are cut by dispatching the
 | `development` | `preview` | bumps the preview counter and pushes it back |
 | `main` | `latest` | tags, cuts the GitHub release, re-seeds `development` at the next patch preview |
 
-
 ## Why a separate package
 
 The short version: nothing that already exists is an engine-free contract, and both extension families need one. The long version, with the ecosystem survey and the prior-art comparison, follows.
 
-The fair first question about any new abstraction is the [xkcd-927](https://xkcd.com/927/) one: *doesn't something already do this?* We asked it before writing a line, and again before extracting this package - an ecosystem survey (Aug 2026) and a demand-evidence review are on record. The short version:
+The fair first question about any new abstraction is the [xkcd-927](https://xkcd.com/927/) one: *doesn't something already do this?* We asked it before writing a line, and again before extracting this package - an ecosystem survey (Aug 2026) and a demand-evidence review are on record. What they found:
 
 **The problem is real and documented upstream.**
 
@@ -117,14 +119,14 @@ On the accessibility side, W3C's [XR Accessibility User Requirements](https://ww
 
 **Why this is not just another standard.**
 
-This package does not compete with any of the above - it does not replace an engine's input system, render anything, or ask any app to switch. It is ~300 lines of **types the existing systems can be described in**: engine adapters wrap what already exists (three.js WebXR, IWSDK, XR Blocks) and expose it through one contract, so libraries above (interactions, spatial UI, …) are written once instead of once per engine.
+This package does not compete with any of the above - it does not replace an engine's input system, render anything, or ask any app to switch. It is a small package of **types the existing systems can be described in**, plus the pure rules every provider shares: engine adapters wrap what already exists (three.js WebXR, IWSDK, XR Blocks) and expose it through one contract, so libraries above (interactions, spatial UI, …) are written once instead of once per engine.
 
 The vendors fund neutrality at the data layer (input profiles); nobody's incentives reach the behavioural layer across engines - that unclaimed seam is the whole scope, and the scope is fenced: if an engine-free equivalent emerges upstream, or spec convergence makes the residue trivial, the stated plan is to adopt/retire, not defend (see the validation record's kill criteria).
 
 ## What this stack is and is not
 
-The Reality Collective WebXR packages aim at one outcome: an app's logic, input handling, interactions and UI should not care which engine hosts them. Each family ships an engine-free core and thin adapters for Meta IWSDK, plain three.js and WebXR, Google XR Blocks, and native XR apps (OpenXR, visionOS) that embed a JavaScript engine. When an app still has to reach into the host, either a contract is missing, which is a bug to report, or the app is overreaching.
+The Reality Collective WebXR packages aim at one outcome: an app's logic, input handling, interactions and UI should not care which engine hosts them. Each family ships an engine-free core and an adapter for each platform it serves. The platforms are Meta IWSDK (the reference), plain three.js and WebXR, Google XR Blocks, native XR apps (OpenXR, visionOS) that embed a JavaScript engine, and Babylon.js where the family has a binding. When an app still has to reach into the host, either a contract is missing, which is a bug to report, or the app is overreaching.
 
 Portable world-building is not a current promise. Scene content (meshes, prefabs, placement) is built by the app, ideally behind a factory interface the app owns, so that a second host can implement the same factories. A shared content descriptor, following the shape of the UI family's `SceneDescriptor`, will be considered only when a second host is actually targeted. Meta's `iwsdk.scene.v1` format is an acceptable authoring interchange in the meantime.
 
-Position recorded on 2026-09-03 from the Pale Signal client's gaps report.
+Position recorded on 2026-09-03 from the Pale Signal client's gaps report. Updated 2026-09-25: loading, stacking and switching scenes is now the Environment family's `SceneManager`; what a scene contains is still the app's.
